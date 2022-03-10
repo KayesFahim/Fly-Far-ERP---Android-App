@@ -3,6 +3,7 @@ package com.flyfar.erp;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -18,6 +19,7 @@ import com.android.volley.toolbox.Volley;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class LoginActivity extends AppCompatActivity {
@@ -63,9 +65,42 @@ public class LoginActivity extends AppCompatActivity {
                             public void onResponse(JSONObject response) {
                                 responseTV.setText(response.toString());
 
-                                JsonObject jsonObject = new JsonParser().parse(response.toString()).getAsJsonObject();
+                                JSONObject jsonObject = null;
+                                try {
+                                    jsonObject = new JSONObject(response.toString());
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                                JSONObject getSth = null;
+                                try {
+                                    getSth = jsonObject.getJSONObject("user");
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                                Object emp_id = null;
+                                Object emailId = null;
+                                Object name = null;
 
-                                System.out.println("User Name: "+jsonObject.get("status").getAsString()); //John
+                                try {
+                                    emp_id = getSth.get("EMP_ID");
+                                    emailId = getSth.get("email");
+                                    name = getSth.get("name");
+
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+
+                                String empId = emp_id.toString();
+                                String empEmail =  emailId.toString();
+                                String empName =  name.toString();
+
+
+                                Intent b = new Intent(LoginActivity.this, Attendance.class);
+                                b.putExtra("empId", empId); //Your id
+                                b.putExtra("empEmail", empEmail); //Your email
+                                b.putExtra("empName", empName); //Your name
+                                startActivity(b);
+                                finish();
                             }
                         },
 
