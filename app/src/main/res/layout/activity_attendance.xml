@@ -122,24 +122,24 @@
         android:layout_marginTop="30dp"
         android:fontFamily="@font/poppins"
         android:gravity="center_vertical|center_horizontal"
-        android:onClick="CheckOut"
+        android:onClick="CheckOuts"
         android:src="@drawable/ic_check_out"
         android:text="Check Out"
         android:textColor="#fff"
         android:textSize="22sp"
-        android:textStyle="bold" />
-    <TextView
+        android:textStyle="bold"
+        tools:ignore="OnClick" />
+
+    <ImageView
         android:id="@+id/message"
-        android:layout_width="wrap_content"
-        android:layout_height="170dp"
+        android:layout_width="165dp"
+        android:layout_height="165dp"
         android:layout_below="@+id/layout4"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="30dp"
         android:fontFamily="@font/poppins"
         android:gravity="center_vertical|center_horizontal"
-        android:src="@drawable/ic_check_out"
-        android:text="See You Tomorrow at 9.30 AM"
-        android:textColor="@color/black"
+        android:src="@drawable/ic_done_today"
         android:textSize="22sp"
         android:textStyle="bold" />
 

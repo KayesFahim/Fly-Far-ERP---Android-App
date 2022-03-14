@@ -2,9 +2,11 @@ package com.flyfar.erp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -21,6 +23,11 @@ import com.google.gson.JsonParser;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import android.provider.Settings.Secure;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -35,10 +42,13 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+
         nameEdt = findViewById(R.id.userEmail);
         jobEdt = findViewById(R.id.userPassword);
         postDataBtn = findViewById(R.id.signin);
         responseTV = findViewById(R.id.response);
+        @SuppressLint("HardwareIds") String android_id = Settings.Secure.getString(getApplicationContext().getContentResolver(),
+                Settings.Secure.ANDROID_ID);
 
 
 
@@ -49,71 +59,78 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String email = nameEdt.getText().toString();
                 String password = jobEdt.getText().toString();
+                String apiURl = baseUrl + "email=" + email + "&password=" + password+"&deviceId="+android_id;
+                try{
 
-                String apiURl = baseUrl + "email=" + email + "&password=" + password;
+                    RequestQueue requestQueue = Volley.newRequestQueue(LoginActivity.this);
+                    JsonObjectRequest objectRequest = new JsonObjectRequest(
+                            Request.Method.GET,
+                            apiURl,
+                            null,
+                            new Response.Listener<JSONObject>() {
+                                @Override
+                                public void onResponse(JSONObject response) {
+                                    responseTV.setText(response.toString());
 
-                RequestQueue requestQueue = Volley.newRequestQueue(LoginActivity.this);
-                progressDialog = new ProgressDialog(LoginActivity.this);
-                progressDialog.setMessage("Loading.....");
-                progressDialog.show();
-                JsonObjectRequest objectRequest = new JsonObjectRequest(
-                        Request.Method.GET,
-                        apiURl,
-                        null,
-                        new Response.Listener<JSONObject>() {
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                responseTV.setText(response.toString());
+                                    JSONObject jsonObject = null;
+                                    try {
+                                        jsonObject = new JSONObject(response.toString());
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                    JSONObject getSth = null;
+                                    try {
+                                        getSth = jsonObject.getJSONObject("user");
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                    Object emp_id = null;
+                                    Object emailId = null;
+                                    Object name = null;
 
-                                JSONObject jsonObject = null;
-                                try {
-                                    jsonObject = new JSONObject(response.toString());
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
+                                    try {
+                                        emp_id = getSth.get("EMP_ID");
+                                        emailId = getSth.get("email");
+                                        name = getSth.get("name");
+
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    String empId = emp_id.toString();
+                                    String empEmail =  emailId.toString();
+                                    String empName =  name.toString();
+
+
+                                    Intent b = new Intent(LoginActivity.this, Attendance.class);
+                                    b.putExtra("empId", empId); //Your id
+                                    b.putExtra("empEmail", empEmail); //Your email
+                                    b.putExtra("empName", empName); //Your name
+                                    startActivity(b);
+                                    finish();
                                 }
-                                JSONObject getSth = null;
-                                try {
-                                    getSth = jsonObject.getJSONObject("user");
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
+                            },
+
+                            new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    Log.e("Rest Response", error.toString());
+
                                 }
-                                Object emp_id = null;
-                                Object emailId = null;
-                                Object name = null;
-
-                                try {
-                                    emp_id = getSth.get("EMP_ID");
-                                    emailId = getSth.get("email");
-                                    name = getSth.get("name");
-
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-
-                                String empId = emp_id.toString();
-                                String empEmail =  emailId.toString();
-                                String empName =  name.toString();
-
-
-                                Intent b = new Intent(LoginActivity.this, Attendance.class);
-                                b.putExtra("empId", empId); //Your id
-                                b.putExtra("empEmail", empEmail); //Your email
-                                b.putExtra("empName", empName); //Your name
-                                startActivity(b);
-                                finish();
                             }
-                        },
+                    );
+                    requestQueue.add(objectRequest);
 
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.e("Rest Response", error.toString());
+                }catch(Exception e){
 
-                            }
-                        }
-                );
-                requestQueue.add(objectRequest);
-                progressDialog.dismiss();
+
+
+                }
+
+
+
+
+
 
             }
         });
